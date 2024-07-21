@@ -21,7 +21,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
   private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
-  
+
   public static boolean isRedAlliance = false;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -31,8 +31,8 @@ public class RobotContainer {
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.Velocity) // I want field-centric
-                                                               // driving in open loop
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+                                                       // driving in open loop
+      .withSteerRequestType(SteerRequestType.MotionMagicExpo);
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -40,9 +40,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance?-1:1)) // Drive forward with
-                                                                                           // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance?-1:1)) // Drive left with negative X (left)
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive
+                                                                                                                      // forward
+                                                                                                                      // with
+            // negative Y (forward)
+            .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive left with negative X
+                                                                                       // (left)
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
