@@ -21,6 +21,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.AimShoot;
+import frc.robot.commands.DoAmp;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -36,6 +37,7 @@ public class RobotContainer {
   private final Shooter shooter = new Shooter();
 
   private Command AimShoot = new AimShoot();
+  private Command DoAmp = new DoAmp();
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -58,13 +60,14 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.cross().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.circle().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    // joystick.cross().whileTrue(drivetrain.applyRequest(() -> brake));
+    // joystick.circle().whileTrue(drivetrain
+    // .applyRequest(() -> point.withModuleDirection(new
+    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
     joystick.L3().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
-    
+
     // Intake in
     joystick.R2().onTrue(Commands.runOnce(() -> intake.eat_in()));
     joystick.R2().onFalse(Commands.runOnce(() -> intake.stop()));
@@ -85,7 +88,12 @@ public class RobotContainer {
     // joystick.L1().onFalse(Commands.runOnce(() -> shooter.shoot_break()));
 
     joystick.L1().whileTrue(AimShoot);
-    
+    // joystick.triangle().whileTrue(Commands.runOnce(() -> shooter.shoot_amp()));
+    // joystick.triangle().onFalse(Commands.runOnce(() -> shooter.shoot_break()));
+    // joystick.circle().whileTrue(Commands.runOnce(() -> arm.arm_amp()));
+    // joystick.cross().onTrue(Commands.runOnce(() -> intake.reverse_once()));
+    joystick.triangle().whileTrue(DoAmp);
+
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }

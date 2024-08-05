@@ -113,12 +113,20 @@ public class Shooter implements Subsystem {
         setMagicVelocity(60, 300);
     }
 
+    public void shoot_amp() {
+        setMagicVelocity(12, 600);
+    }
+
+    public void shoot_speed(double vel, double accel) {
+        setMagicVelocity(vel, accel);
+    }
+
     public void shoot_break() {
         setMagicVelocity(0, 300);
     }
 
-    public boolean speed_ready() {
-        return Math.abs(m_Shooter_D.getVelocity().getValueAsDouble() - 60) < 0.2;
+    public boolean speed_ready(double speed) {
+        return Math.abs(m_Shooter_D.getVelocity().getValueAsDouble() - speed) < 0.2;
     }
 
     // public void shoot_out_voltage() {

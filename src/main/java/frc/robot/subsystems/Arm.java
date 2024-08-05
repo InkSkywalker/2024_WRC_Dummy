@@ -65,8 +65,8 @@ public class Arm implements Subsystem {
                 .withFeedback(new FeedbackConfigs()
                         .withRotorToSensorRatio(0.0119))
                 .withMotionMagic(new MotionMagicConfigs()
-                        .withMotionMagicCruiseVelocity(16)
-                        .withMotionMagicAcceleration(16)
+                        .withMotionMagicCruiseVelocity(12)
+                        .withMotionMagicAcceleration(12)
                         .withMotionMagicJerk(32))
                 .withOpenLoopRamps(new OpenLoopRampsConfigs()
                         .withVoltageOpenLoopRampPeriod(0.45))
@@ -165,16 +165,36 @@ public class Arm implements Subsystem {
         setPosition(8);
     }
 
+    public void arm_amp() {
+        setPosition(25.8);
+    }
+
     public void arm_down() {
         setPosition(0.6);
+    }
+
+    public void set_angle(double angle) {
+        setPosition(angle);
+    }
+
+    public double get_angle() {
+        return m_Arm_L.getPosition().getValueAsDouble();
     }
 
     public boolean is_up() {
         return m_Arm_L.getPosition().getValueAsDouble() > 3;
     }
 
+    public boolean is_amp() {
+        return m_Arm_L.getPosition().getValueAsDouble() > 25;
+    }
+
     public boolean is_down() {
         return m_Arm_L.getPosition().getValueAsDouble() <= 3;
+    }
+
+    public boolean is_ready(double angle) {
+        return Math.abs(m_Arm_L.getPosition().getValueAsDouble()  - angle) < 1;
     }
 
     public void setPosition(double position) {
