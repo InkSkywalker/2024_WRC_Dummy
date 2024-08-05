@@ -129,8 +129,8 @@ public class Intake implements Subsystem {
     public void reverse_once() {
         var positionNow_L = m_Intake_L.getPosition();
         var positionNow_R = m_Intake_R.getPosition();
-        m_Intake_L.setControl(positionRequest_L.withPosition(positionNow_L.getValue() - 0.8));
-        m_Intake_R.setControl(positionRequest_R.withPosition(positionNow_R.getValue() - 0.8));
+        m_Intake_L.setControl(positionRequest_L.withPosition(positionNow_L.getValue() - 0.5));
+        m_Intake_R.setControl(positionRequest_R.withPosition(positionNow_R.getValue() - 0.5));
         state = State.REVERSED;
     }
 

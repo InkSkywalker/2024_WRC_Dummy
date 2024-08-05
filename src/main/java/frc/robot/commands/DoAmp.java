@@ -15,10 +15,9 @@ public class DoAmp extends Command {
     private double intakeL_startPos;
 
     private enum State {
-        INTAKE_REVERSE,
         ARM_UP,
         SHOOTER_SHOOT,
-        INTAKE_DELIVER,
+        WAIT_ARM,
         ARM_SHUAI,
         ARM_DOWN,
         FINISHED,
@@ -40,21 +39,18 @@ public class DoAmp extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        arm.set_angle(ARM_STAGE_1);
+        arm.arm_pos_magic(ARM_STAGE_1, 100, 300, 900);
         shooter.shoot_break();
         intake.stop();
         intakeL_startPos = intake.getPosition_L();
         if (intake.getState() != Intake.State.REVERSED){
             intake.reverse_once();
-            state = State.INTAKE_REVERSE;
         }
-        else {
-            state = State.ARM_UP;
-        }
+        state = State.ARM_UP;
     }
 
     private final double ARM_STAGE_1 = 12;
-    private final double SHOOT_ANGLE = 20;
+    private final double SHOOT_ANGLE = 13;
     private final double ARM_STAGE_2 = 24;
     private final double SHOOTER_SPEED = 11;
     private final double SHOOTER_ACCEL = 600;
@@ -63,28 +59,21 @@ public class DoAmp extends Command {
     @Override
     public void execute() {
         switch (state) {
-            case INTAKE_REVERSE:
-                if (arm.is_ready(ARM_STAGE_1) && intakeL_startPos - intake.getPosition_L() > 0.5) {
-                    state = State.SHOOTER_SHOOT;
-                    shooter.shoot_speed(SHOOTER_SPEED, SHOOTER_ACCEL);
-                }
-                break;
             case ARM_UP:
-                if (arm.is_ready(ARM_STAGE_1)){
+                if (arm.get_angle() > ARM_STAGE_1 - 3){
                     state = State.SHOOTER_SHOOT;
-                    shooter.shoot_speed(SHOOTER_SPEED, SHOOTER_ACCEL);
+                    shooter.shoot_magic_vel(SHOOTER_SPEED, SHOOTER_ACCEL);
+                    arm.arm_pos_magic(ARM_STAGE_2, 120, 400, 1200);
                 }
                 break;
             case SHOOTER_SHOOT:
                 if (shooter.speed_ready(SHOOTER_SPEED)){
-                    state = State.INTAKE_DELIVER;
-                    // intake.eat_in();
-                    arm.set_angle(ARM_STAGE_2);
-                    timer.reset();
-                    timer.start();
+                    state = State.WAIT_ARM;
+                    // timer.reset();
+                    // timer.start();
                 }
                 break;
-            case INTAKE_DELIVER:
+            case WAIT_ARM:
                 if (arm.get_angle() > SHOOT_ANGLE){
                     intake.eat_in();
                     state = State.ARM_SHUAI;
@@ -109,7 +98,7 @@ public class DoAmp extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        shooter.shoot_break();
+        shooter.stop();
         arm.arm_down();
         intake.stop();
     }
@@ -120,3 +109,4 @@ public class DoAmp extends Command {
         return state == State.FINISHED || state == State.ARM_DOWN;
     }
 }
+
