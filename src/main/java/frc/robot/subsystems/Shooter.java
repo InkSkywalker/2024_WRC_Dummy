@@ -42,7 +42,7 @@ public class Shooter implements Subsystem {
                 .withCurrentLimits(
                         new CurrentLimitsConfigs()
                                 .withSupplyCurrentLimit(40)
-                                .withSupplyCurrentLimitEnable(true))
+                                .withSupplyCurrentLimitEnable(false))
                 .withMotorOutput(
                         new MotorOutputConfigs()
                                 .withInverted(InvertedValue.Clockwise_Positive)
@@ -67,7 +67,7 @@ public class Shooter implements Subsystem {
                 .withCurrentLimits(
                         new CurrentLimitsConfigs()
                                 .withSupplyCurrentLimit(40)
-                                .withSupplyCurrentLimitEnable(true))
+                                .withSupplyCurrentLimitEnable(false))
                 .withMotorOutput(
                         new MotorOutputConfigs()
                                 .withInverted(InvertedValue.CounterClockwise_Positive)
@@ -94,10 +94,10 @@ public class Shooter implements Subsystem {
 
     }
 
-    // public void setVoltage(double voltage) {
-    //     m_Shooter_D.setControl(voltageRequest.withOutput(voltage));
-    //     m_Shooter_U.setControl(voltageRequest.withOutput(voltage));
-    // }
+    public void setVoltage(double voltage) {
+        m_Shooter_D.setControl(voltageRequest.withOutput(voltage));
+        m_Shooter_U.setControl(voltageRequest.withOutput(voltage));
+    }
 
     // public void setVelocity(double velocity) {
     //     m_Shooter_D.setControl(velocityRequest.withVelocity(velocity));
@@ -110,14 +110,14 @@ public class Shooter implements Subsystem {
     }
 
     public void shoot_out() {
-        setMagicVelocity(60, 300);
+        setMagicVelocity(80, 300);
     }
 
     public void shoot_amp() {
         setMagicVelocity(12, 600);
     }
 
-    public void shoot_speed(double vel, double accel) {
+    public void shoot_magic_vel(double vel, double accel) {
         setMagicVelocity(vel, accel);
     }
 
@@ -137,8 +137,8 @@ public class Shooter implements Subsystem {
     //     setVoltage(-5);
     // }
 
-    // public void stop() {
-    //     setVoltage(0);
-    // }
+    public void stop() {
+        setVoltage(0);
+    }
 
 }

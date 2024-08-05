@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -19,8 +20,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class Arm implements Subsystem {
-    TalonFX m_Arm_L;
-    TalonFX m_Arm_R;
+    public static final TalonFX m_Arm_L = new TalonFX(12, "canivore");
+    public static final TalonFX m_Arm_R = new TalonFX(13, "canivore");
 
     TalonFXConfiguration ArmConfig_L;
     TalonFXConfiguration ArmConfig_R;
@@ -32,8 +33,6 @@ public class Arm implements Subsystem {
     // Position Range: 0 ~ 26.4
 
     public Arm() {
-        m_Arm_L = new TalonFX(12, "canivore");
-        m_Arm_R = new TalonFX(13, "canivore");
 
         positionRequest = new DynamicMotionMagicVoltage(0, 100, 400, 4000).withEnableFOC(false);
         voltageRequest = new VoltageOut(0).withEnableFOC(false);
@@ -65,8 +64,8 @@ public class Arm implements Subsystem {
                 .withFeedback(new FeedbackConfigs()
                         .withRotorToSensorRatio(0.0119))
                 .withMotionMagic(new MotionMagicConfigs()
-                        .withMotionMagicCruiseVelocity(12)
-                        .withMotionMagicAcceleration(12)
+                        .withMotionMagicCruiseVelocity(16)
+                        .withMotionMagicAcceleration(16)
                         .withMotionMagicJerk(32))
                 .withOpenLoopRamps(new OpenLoopRampsConfigs()
                         .withVoltageOpenLoopRampPeriod(0.45))
@@ -165,12 +164,20 @@ public class Arm implements Subsystem {
         setPosition(8);
     }
 
-    public void arm_amp() {
-        setPosition(25.8);
-    }
-
     public void arm_down() {
         setPosition(0.6);
+    }
+
+    public void arm_pos_magic(double pos, double max_vel, double accel, double jerk) {
+        DynamicMotionMagicVoltage req = new DynamicMotionMagicVoltage(pos, max_vel, accel, jerk).withEnableFOC(true);
+        m_Arm_L.setControl(req);
+        m_Arm_R.setControl(right_follow_left);
+    }
+
+    public void arm_vel_magic(double vel, double accel) {
+        MotionMagicVelocityVoltage req = new MotionMagicVelocityVoltage(vel).withAcceleration(accel).withEnableFOC(true);
+        m_Arm_L.setControl(req);
+        m_Arm_R.setControl(right_follow_left);
     }
 
     public void set_angle(double angle) {
@@ -210,5 +217,7 @@ public class Arm implements Subsystem {
     //     System.out.println("Arm_L: " + m_Arm_L.getPosition());
     //     System.out.println("Arm_R: " + m_Arm_R.getPosition());
     // }
+
+    
 
 }

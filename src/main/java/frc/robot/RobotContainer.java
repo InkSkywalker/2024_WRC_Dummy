@@ -30,11 +30,11 @@ public class RobotContainer {
   public static boolean isRedAlliance = false;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
-  private final CommandPS5Controller joystick = new CommandPS5Controller(0); // My joystick
-  private final Swerve drivetrain = TunerConstants.DriveTrain; // My drivetrain
-  private final Intake intake = new Intake(); // My intake
-  private final Arm arm = new Arm();
-  private final Shooter shooter = new Shooter();
+  public static final CommandPS5Controller joystick = new CommandPS5Controller(0); // My joystick
+  public static final Swerve drivetrain = TunerConstants.DriveTrain; // My drivetrain
+  public static final Intake intake = new Intake(); // My intake
+  public static final Arm arm = new Arm();
+  public static final Shooter shooter = new Shooter();
 
   private Command AimShoot = new AimShoot();
   private Command DoAmp = new DoAmp();
@@ -50,15 +50,15 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
   private void configureBindings() {
-    drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive
-                                                                                                                      // forward
-                                                                                                                      // with
-            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive left with negative X
-                                                                                       // (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-        ));
+    // drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
+    //     drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive
+    //                                                                                                                   // forward
+    //                                                                                                                   // with
+    //         // negative Y (forward)
+    //         .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive left with negative X
+    //                                                                                    // (left)
+    //         .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+    //     ));
 
     // joystick.cross().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.circle().whileTrue(drivetrain
