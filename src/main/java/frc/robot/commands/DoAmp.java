@@ -50,7 +50,7 @@ public class DoAmp extends Command {
     }
 
     private final double ARM_STAGE_1 = 12;
-    private final double SHOOT_ANGLE = 13;
+    private final double SHOOT_ANGLE = 9;
     private final double ARM_STAGE_2 = 24;
     private final double SHOOTER_SPEED = 11;
     private final double SHOOTER_ACCEL = 600;
@@ -63,7 +63,7 @@ public class DoAmp extends Command {
                 if (arm.get_angle() > ARM_STAGE_1 - 3){
                     state = State.SHOOTER_SHOOT;
                     shooter.shoot_magic_vel(SHOOTER_SPEED, SHOOTER_ACCEL);
-                    arm.arm_pos_magic(ARM_STAGE_2, 120, 400, 1200);
+                    arm.arm_pos_magic(ARM_STAGE_2, 120, 600, 3000);
                 }
                 break;
             case SHOOTER_SHOOT:
