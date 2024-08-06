@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.PhotonVision;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.AimShoot;
@@ -35,6 +37,8 @@ public class RobotContainer {
   public static final Intake intake = new Intake(); // My intake
   public static final Arm arm = new Arm();
   public static final Shooter shooter = new Shooter();
+  public static final Limelight limelight = new Limelight();
+//   public static final PhotonVision photonVision = new PhotonVision();
 
   private Command AimShoot = new AimShoot();
   private Command DoAmp = new DoAmp();
@@ -50,15 +54,14 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
   private void configureBindings() {
-    // drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-    //     drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive
-    //                                                                                                                   // forward
-    //                                                                                                                   // with
-    //         // negative Y (forward)
-    //         .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance ? -1 : 1)) // Drive left with negative X
-    //                                                                                    // (left)
-    //         .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-    //     ));
+    drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (isRedAlliance ? -1 : 1))
+            // Drive forward with negative Y (forward)
+            .withVelocityY(-joystick.getLeftX() * MaxSpeed * (isRedAlliance ? -1 : 1))
+            // Drive left with negative X (left)
+            .withRotationalRate(-joystick.getRightX() * MaxAngularRate)
+        // Drive counterclockwise with negative X (left)
+        ));
 
     // joystick.cross().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.circle().whileTrue(drivetrain
