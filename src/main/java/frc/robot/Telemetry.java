@@ -15,9 +15,12 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Swerve;
 
 public class Telemetry {
     private final double MaxSpeed;
+    private final Swerve swerve = TunerConstants.DriveTrain;
 
     /**
      * Construct a telemetry object, with the specified max speed of the robot
@@ -43,6 +46,13 @@ public class Telemetry {
     private final DoublePublisher speed = driveStats.getDoubleTopic("Speed").publish();
     private final DoublePublisher odomPeriod = driveStats.getDoubleTopic("Odometry Period").publish();
 
+    private final NetworkTable autoAim = inst.getTable("AutoAim");
+    private final DoublePublisher target_dX = autoAim.getDoubleTopic("target_dX").publish();
+    private final DoublePublisher target_dY = autoAim.getDoubleTopic("target_dY").publish();
+    private final DoublePublisher yaw_setPoint = autoAim.getDoubleTopic("yaw_setPoint").publish();
+    private final DoublePublisher yaw_now = autoAim.getDoubleTopic("yaw_now").publish();
+    private final DoublePublisher yaw_controller_output = autoAim.getDoubleTopic("yaw_controller_output").publish();    
+    
     /* Keep a reference of the last pose to calculate the speeds */
     private Pose2d m_lastPose = new Pose2d();
     private double lastTime = Utils.getCurrentTimeSeconds();
@@ -83,6 +93,9 @@ public class Telemetry {
             pose.getY(),
             pose.getRotation().getDegrees()
         });
+
+        yaw_now.set(state.Pose.getRotation().getDegrees());
+        yaw_setPoint.set(swerve.yaw_setpoint);
 
         /* Telemeterize the robot's general speeds */
         double currentTime = Utils.getCurrentTimeSeconds();

@@ -22,6 +22,8 @@ public class Shooter implements Subsystem {
     TalonFXConfiguration ShooterConfig_D;
     TalonFXConfiguration ShooterConfig_U;
 
+    public static double shooter_autoaim_target = 60;
+
     VelocityTorqueCurrentFOC velocityRequest;
     MotionMagicVelocityTorqueCurrentFOC motionMagicVelRequest;
     VoltageOut voltageRequest;
@@ -109,8 +111,16 @@ public class Shooter implements Subsystem {
         m_Shooter_U.setControl(motionMagicVelRequest.withVelocity(velocity).withAcceleration(accel));
     }
 
-    public void shoot_out() {
-        setMagicVelocity(80, 300);
+    public void shoot_out(double vel) {
+        setMagicVelocity(vel, 300);
+    }
+
+    public void shoot_autoaim() {
+        setMagicVelocity(shooter_autoaim_target, 300);
+    }
+
+    public boolean speed_ready_autoaim() {
+        return speed_ready(shooter_autoaim_target);
     }
 
     public void shoot_amp() {
