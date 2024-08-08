@@ -12,8 +12,6 @@ public class DoAmp extends Command {
     private final Arm arm;
     private final Intake intake;
 
-    private double intakeL_startPos;
-
     private enum State {
         ARM_UP,
         SHOOTER_SHOOT,
@@ -42,7 +40,6 @@ public class DoAmp extends Command {
         arm.arm_pos_magic(ARM_STAGE_1, 100, 300, 900);
         shooter.shoot_break();
         intake.stop();
-        intakeL_startPos = intake.getPosition_L();
         if (intake.getState() != Intake.State.REVERSED){
             intake.reverse_once();
         }

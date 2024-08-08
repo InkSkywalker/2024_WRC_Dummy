@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Limelight_v1;
 import frc.robot.subsystems.Limelight_v2;
 import frc.robot.subsystems.Aimer;
 import frc.robot.subsystems.Arm;
