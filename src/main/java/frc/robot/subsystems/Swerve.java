@@ -11,12 +11,19 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.generated.TunerConstants;
 
@@ -32,10 +39,25 @@ public class Swerve extends SwerveDrivetrain implements Subsystem {
     public boolean take_control_yaw = false;
     public double yaw_setpoint = 0.;
     public double yaw_controller_output = 0;
-    public PIDController m_yawController = new PIDController(0.1, 0, 0);
+    public PIDController m_yawController = new PIDController(0.2, 0, 0.005);
+
+    public boolean take_control_xy = false;
+    public double x_setpoint = 0.;
+    public double y_setpoint = 0.;
+    public PIDController m_xController = new PIDController(0.1, 0, 0);
+    public PIDController m_yController = new PIDController(0.1, 0, 0);
+    public double x_controller_output = 0;
+    public double y_controller_output = 0;
 
     public static double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
     public static double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTable table = inst.getTable("Swerve");
+    private final DoublePublisher yawtargetpub = table.getDoubleTopic("yaw_target").publish();
+    private final DoublePublisher yawnowpub = table.getDoubleTopic("yaw_now").publish();
+    private final DoublePublisher yawerrorpub = table.getDoubleTopic("yaw_error").publish();
+    private final DoublePublisher yawoutput = table.getDoubleTopic("yaw_output").publish();
 
     public static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -55,55 +77,101 @@ public class Swerve extends SwerveDrivetrain implements Subsystem {
     public Swerve(SwerveDrivetrainConstants driveTrainConstants, double OdometryUpdateFrequency,
             SwerveModuleConstants... modules) {
         super(driveTrainConstants, OdometryUpdateFrequency, modules);
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
     }
 
     public Swerve(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
         super(driveTrainConstants, modules);
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
     }
 
     public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
         return run(() -> this.setControl(requestSupplier.get()));
     }
 
-    public Command drive_cmd(double x, double y, double rot) {
-        // double rot_output;
-        // if (take_control_yaw) {
-        //     rot_output = yaw_controller_output;
-        // }
-        // else {
-        //     rot_output = rot;
-        // }
-        System.out.println(x + " " + y + " " + rot);
-        return this.applyRequest(() -> drive.withVelocityX(x).withVelocityY(y).withRotationalRate(rot));
+    public Command cmd_drive(Supplier<Double> x, Supplier<Double> y, Supplier<Double> rot) {
+        Supplier<Double> rot_output;
+        Supplier<Double> x_output;
+        Supplier<Double> y_output;
+        rot_output = () -> {
+            if (take_control_yaw) {
+                if (yaw_controller_output > MaxAngularRate) {
+                    return MaxAngularRate;
+                } else if (yaw_controller_output < -MaxAngularRate) {
+                    return -MaxAngularRate;
+                }
+                return yaw_controller_output;
+            } else {
+                if (rot.get() > MaxAngularRate) {
+                    return MaxAngularRate;
+                } else if (rot.get() < -MaxAngularRate) {
+                    return -MaxAngularRate;
+                }
+                return rot.get();
+            }
+        };
+        x_output = () -> {
+            if (take_control_xy) {
+                if (x_controller_output > MaxSpeed) {
+                    return MaxSpeed;
+                } else if (x_controller_output < -MaxSpeed) {
+                    return -MaxSpeed;
+                }
+                return x_controller_output;
+            } else {
+                if (x.get() > MaxSpeed) {
+                    return MaxSpeed;
+                } else if (x.get() < -MaxSpeed) {
+                    return -MaxSpeed;
+                }
+                return x.get();
+            }
+        };
+        y_output = () -> {
+            if (take_control_xy) {
+                if (y_controller_output > MaxSpeed) {
+                    return MaxSpeed;
+                } else if (y_controller_output < -MaxSpeed) {
+                    return -MaxSpeed;
+                }
+                return y_controller_output;
+            } else {
+                if (y.get() > MaxSpeed) {
+                    return MaxSpeed;
+                } else if (y.get() < -MaxSpeed) {
+                    return -MaxSpeed;
+                }
+                return y.get();
+            }
+        };
+        Supplier<Double> rot_deadband = () -> {
+            if (take_control_yaw) {
+                return 0.;
+            } else {
+                return 0.1 * MaxAngularRate;
+            }
+        };
+        return applyRequest(() -> drive.withVelocityX(x_output.get()).withVelocityY(y_output.get())
+                .withRotationalRate(rot_output.get()).withRotationalDeadband(rot_deadband.get()));
     }
 
-    public Command brake_cmd() {
+    public Command cmd_brake_x() {
         return applyRequest(() -> brake);
     }
 
-    public Command pointWheelsAt_cmd(double x, double y) {
-        return applyRequest(() -> point.withModuleDirection(new Rotation2d(x, y)));
+    public Command cmd_pointwheels(Supplier<Double> x, Supplier<Double> y) {
+        return applyRequest(() -> point.withModuleDirection(new Rotation2d(x.get(), y.get())));
     }
 
-    private void startSimThread() {
-        m_lastSimTime = Utils.getCurrentTimeSeconds();
-
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
-        m_simNotifier = new Notifier(() -> {
-            final double currentTime = Utils.getCurrentTimeSeconds();
-            double deltaTime = currentTime - m_lastSimTime;
-            m_lastSimTime = currentTime;
-
-            /* use the measured time delta, get battery voltage from WPILib */
-            updateSimState(deltaTime, RobotController.getBatteryVoltage());
+    public void setHead() {
+        DriverStation.getAlliance().ifPresent((allianceColor) -> {
+            if (allianceColor == Alliance.Red) {
+                this.getPigeon2().setYaw(RedAlliancePerspectiveRotation.getDegrees());
+                this.setOperatorPerspectiveForward(RedAlliancePerspectiveRotation);
+            } else {
+                this.getPigeon2().setYaw(BlueAlliancePerspectiveRotation.getDegrees());
+                this.setOperatorPerspectiveForward(BlueAlliancePerspectiveRotation);
+            }
         });
-        m_simNotifier.startPeriodic(kSimLoopPeriod);
+        this.seedFieldRelative();
     }
 
     @Override
@@ -134,7 +202,23 @@ public class Swerve extends SwerveDrivetrain implements Subsystem {
             });
         }
 
-        this.yaw_controller_output = m_yawController.calculate(this.getState().Pose.getRotation().getDegrees(), this.yaw_setpoint);
-        
+        double yaw_error = -this.yaw_setpoint + this.getState().Pose.getRotation().getDegrees();
+        if (yaw_error > 180) {
+            yaw_error -= 360;
+        }
+        if (yaw_error < -180) {
+            yaw_error += 360;
+        }
+        this.yaw_controller_output = m_yawController.calculate(yaw_error, 0);
+
+        this.x_controller_output = m_xController.calculate(this.getState().Pose.getTranslation().getX(),
+                this.x_setpoint);
+        this.y_controller_output = m_yController.calculate(this.getState().Pose.getTranslation().getY(),
+                this.y_setpoint);
+
+        yawtargetpub.set(this.yaw_setpoint);
+        yawnowpub.set(this.getState().Pose.getRotation().getDegrees());
+        yawerrorpub.set(yaw_error);
+        yawoutput.set(this.yaw_controller_output);
     }
 }

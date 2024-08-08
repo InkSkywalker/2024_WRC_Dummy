@@ -52,9 +52,6 @@ public class AimShoot extends Command {
         else {
             state = State.ARM_UP;
         }
-
-        arm.arm_pos_magic(intakeL_startPos, intakeL_startPos, intakeL_startPos, intakeL_startPos);
-
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -62,19 +59,20 @@ public class AimShoot extends Command {
     public void execute() {
         switch (state) {
             case INTAKE_REVERSE:
-                if (arm.is_up() && intakeL_startPos - intake.getPosition_L() > 0.3) {
+                if (arm.is_up() && intakeL_startPos - intake.getPosition_L() > 0.8) {
                     state = State.SHOOTER_SHOOT;
-                    shooter.shoot_out();
+                    shooter.shoot_autoaim();
                 }
                 break;
             case ARM_UP:
                 if (arm.is_up()){
                     state = State.SHOOTER_SHOOT;
-                    shooter.shoot_out();
+                    shooter.shoot_autoaim();
                 }
                 break;
             case SHOOTER_SHOOT:
-                if (shooter.speed_ready(80)){
+                shooter.shoot_autoaim();
+                if (shooter.speed_ready_autoaim()){
                     state = State.INTAKE_DELIVER;
                     intake.eat_in();
                     timer.reset();
@@ -87,6 +85,9 @@ public class AimShoot extends Command {
                     shooter.shoot_break();
                     arm.arm_down();
                     intake.stop();
+                }
+                else {
+                    shooter.shoot_autoaim();
                 }
                 break;
             case ARM_DOWN:

@@ -64,6 +64,7 @@ public class DoAmp extends Command {
                     state = State.SHOOTER_SHOOT;
                     shooter.shoot_magic_vel(SHOOTER_SPEED, SHOOTER_ACCEL);
                     arm.arm_pos_magic(ARM_STAGE_2, 120, 600, 3000);
+                    intake.eat_in();
                 }
                 break;
             case SHOOTER_SHOOT:

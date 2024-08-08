@@ -5,9 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.SteerRequestType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,8 +15,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.PhotonVision;
+import frc.robot.subsystems.Limelight_v1;
+import frc.robot.subsystems.Limelight_v2;
+import frc.robot.subsystems.Aimer;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.AimShoot;
@@ -35,24 +33,23 @@ public class RobotContainer {
     public static final Intake intake = new Intake(); // My intake
     public static final Arm arm = new Arm();
     public static final Shooter shooter = new Shooter();
-    public static final Limelight limelight = new Limelight();
+    public static final Limelight_v2 limelight = new Limelight_v2();
+    public static final Aimer aimer = new Aimer();
     // public static final PhotonVision photonVision = new PhotonVision();
 
     private Command AimShoot = new AimShoot();
     private Command DoAmp = new DoAmp();
 
-    private final Telemetry logger = new Telemetry(drivetrain.MaxSpeed);
+    private final Telemetry logger = new Telemetry(Swerve.MaxSpeed);
 
     private void configureBindings() {
-        drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> Swerve.drive
-                        .withVelocityX(-joystick.getLeftY() * Swerve.MaxSpeed * (isRedAlliance ? -1 : 1))
-                        // Drive forward with negative Y (forward)
-                        .withVelocityY(-joystick.getLeftX() * Swerve.MaxSpeed * (isRedAlliance ? -1 : 1))
-                        // Drive left with negative X (left)
-                        .withRotationalRate(-joystick.getRightX() * Swerve.MaxAngularRate)
-                // Drive counterclockwise with negative X (left)
-                ));
+        drivetrain.setDefaultCommand(
+            drivetrain.cmd_drive(
+                    () -> (-joystick.getLeftY() * Swerve.MaxSpeed * (isRedAlliance ? -1 : 1)),
+                    () -> (-joystick.getLeftX() * Swerve.MaxSpeed * (isRedAlliance ? -1 : 1)),
+                    () -> (-joystick.getRightX() * Swerve.MaxAngularRate)
+                    )
+        );
 
         // joystick.cross().whileTrue(drivetrain.applyRequest(() -> brake));
         // joystick.circle().whileTrue(drivetrain
@@ -61,7 +58,7 @@ public class RobotContainer {
 
         // reset the field-centric heading on left bumper press
         joystick.L3().onTrue(drivetrain.runOnce(() -> {
-            drivetrain.seedFieldRelative();
+            drivetrain.setHead();
         }));
 
         // Intake in
@@ -77,19 +74,16 @@ public class RobotContainer {
         joystick.povDown().onTrue(Commands.runOnce(() -> arm.arm_down_volt(false)));
         joystick.povDown().onFalse(Commands.runOnce(() -> arm.stop()));
 
-        joystick.R2().onTrue(Commands.runOnce(() -> {
-            arm.arm_up();
+        joystick.R2().whileTrue(Commands.runOnce(() -> {
+            arm.arm_up_autoaim();
             drivetrain.take_control_yaw = true;
         }));
         joystick.R2().onFalse(Commands.runOnce(() -> {
             arm.arm_down();
             drivetrain.take_control_yaw = false;
         }));
-
-        // joystick.L1().onTrue(Commands.runOnce(() -> shooter.shoot_out()));
-        // joystick.L1().onFalse(Commands.runOnce(() -> shooter.shoot_break()));
-
         joystick.R1().whileTrue(AimShoot);
+        
         // joystick.triangle().whileTrue(Commands.runOnce(() -> shooter.shoot_amp()));
         // joystick.triangle().onFalse(Commands.runOnce(() -> shooter.shoot_break()));
         // joystick.circle().whileTrue(Commands.runOnce(() -> arm.arm_amp()));

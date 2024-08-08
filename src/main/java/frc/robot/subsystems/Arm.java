@@ -17,11 +17,17 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Arm implements Subsystem {
+public class Arm extends SubsystemBase {
     public static final TalonFX m_Arm_L = new TalonFX(12, "canivore");
     public static final TalonFX m_Arm_R = new TalonFX(13, "canivore");
+
+    public static double arm_autoaim_target = 1;
 
     TalonFXConfiguration ArmConfig_L;
     TalonFXConfiguration ArmConfig_R;
@@ -29,6 +35,9 @@ public class Arm implements Subsystem {
     DynamicMotionMagicVoltage positionRequest;
     VoltageOut voltageRequest;
     Follower right_follow_left;
+
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTable table = inst.getTable("Aimer");
 
     // Position Range: 0 ~ 26.4
 
@@ -164,6 +173,10 @@ public class Arm implements Subsystem {
         setPosition(8);
     }
 
+    public void arm_up_autoaim() {
+        setPosition(arm_autoaim_target);
+    }
+
     public void arm_down() {
         setPosition(0.6);
     }
@@ -213,11 +226,9 @@ public class Arm implements Subsystem {
         setVoltage(0);
     }
 
-    // public void log() {
-    //     System.out.println("Arm_L: " + m_Arm_L.getPosition());
-    //     System.out.println("Arm_R: " + m_Arm_R.getPosition());
-    // }
-
-    
+    @Override
+    public void periodic() {
+        
+    }
 
 }
