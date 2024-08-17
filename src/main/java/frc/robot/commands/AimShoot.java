@@ -7,7 +7,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 public class AimShoot extends Command {
-
+    private final int Dummy;
     private final Shooter shooter;
     private final Arm arm;
     private final Intake intake;
@@ -29,6 +29,7 @@ public class AimShoot extends Command {
 
     public AimShoot() {
         // Use addRequirements() here to declare subsystem dependencies.
+        Dummy = 0;
         shooter = new Shooter();
         arm = new Arm();
         intake = new Intake();
